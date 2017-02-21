@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 @ControllerAdvice
@@ -19,6 +20,11 @@ public class ExceptionHandlerControllerAdvice {
 	@ExceptionHandler
 	public ResponseEntity<String> handleIOException(IOException e) {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+	}
+
+	@ExceptionHandler
+	public ResponseEntity<String> handleFileNotFoundException(FileNotFoundException e) {
+		return ResponseEntity.unprocessableEntity().body(e.getMessage());
 	}
 
 }

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 @RestController
@@ -25,7 +26,7 @@ public class FileController {
 	}
 
 	@GetMapping("/get-state")
-	public ResponseEntity<State> getState() {
+	public ResponseEntity<State> getState() throws FileNotFoundException {
 		return ResponseEntity.ok(fileService.getState());
 	}
 
