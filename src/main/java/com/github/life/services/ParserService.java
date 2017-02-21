@@ -56,6 +56,11 @@ class ParserService {
 					int x = Integer.parseInt(splits[0]) + universeCols / 2;
 					int y = -(Integer.parseInt(splits[1])) + universeRows / 2;
 
+					// skip blocks that are outside of our universe
+					if (!validCoords(x, y, universeCols, universeRows)) {
+						continue;
+					}
+
 					Map<String, Integer> start = new LinkedHashMap<>();
 					start.put("x", x);
 					start.put("y", y);
@@ -74,7 +79,14 @@ class ParserService {
 
 				// block data ---------------------------------------------------------------------
 				if (Objects.nonNull(currentBlock)) {
-					currentBlock.getCells().add(line.chars().mapToObj(value -> {
+
+					// skip adding new lines that does not fit into our universe
+					int y = currentBlock.getStart().get("y");
+					if (y + currentBlock.getCells().size() >= universeRows) {
+						continue;
+					}
+
+					List<Integer> currentBlockLine = line.chars().mapToObj(value -> {
 						switch (value) {
 							case '.':
 								return 0;
@@ -83,8 +95,16 @@ class ParserService {
 							default:
 								throw new InvalidLifFileException("invalid character found in block data!");
 						}
-					}).collect(Collectors.toList()));
+					}).collect(Collectors.toList());
 
+					// "crop" blocks that does not fit into our universe
+					int x = currentBlock.getStart().get("x");
+					if (x + currentBlockLine.size() > universeCols) {
+						currentBlockLine = currentBlockLine.stream()
+							.limit(universeCols - x).collect(Collectors.toList());
+					}
+
+					currentBlock.getCells().add(currentBlockLine);
 				}
 			}
 		}
@@ -103,5 +123,9 @@ class ParserService {
 	private void standardConwayRules(Map<String, List<Integer>> rules) {
 		rules.put("toSurvive", Arrays.asList(2, 3));
 		rules.put("toComeAlive", Collections.singletonList(3));
+	}
+
+	private boolean validCoords(int x, int y, int cols, int rows) {
+		return x >= 0 && x < cols && y >= 0 && y < rows;
 	}
 }
