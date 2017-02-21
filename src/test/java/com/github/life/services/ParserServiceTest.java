@@ -1,5 +1,6 @@
 package com.github.life.services;
 
+import com.github.life.errors.InvalidLifFileException;
 import com.github.life.models.Block;
 import com.github.life.models.State;
 import org.junit.Before;
@@ -58,6 +59,38 @@ public class ParserServiceTest {
 		customRule.put("toSurvive", Arrays.asList(1, 2, 5));
 		customRule.put("toComeAlive", Arrays.asList(3, 6));
 		testData.setRules(customRule);
+
+		assertState(testData, is, testUniverseCols, testUniverseRows);
+	}
+
+	/**
+	 * Tests if the standard Conway rules are applied
+	 * if a file does not contain a rule definition.
+	 *
+	 * @throws Exception if an error occurs.
+	 */
+	@Test
+	public void parseAppliesDefaultRulesIfNoneSpecified() throws Exception {
+		File file = ResourceUtils.getFile("classpath:acorn_no_rule.lif");
+		FileInputStream is = new FileInputStream(file);
+
+		State testData = acornTestData();
+
+		assertState(testData, is, testUniverseCols, testUniverseRows);
+	}
+
+	/**
+	 * Tests if an {@link InvalidLifFileException} is thrown when
+	 * the input file contains an invalid character in the block data.
+	 *
+	 * @throws InvalidLifFileException if an invalid character has been found.
+	 */
+	@Test(expected = InvalidLifFileException.class)
+	public void parseThrowsIfInvalidCharFound() throws Exception {
+		File file = ResourceUtils.getFile("classpath:acorn_invalid_char.lif");
+		FileInputStream is = new FileInputStream(file);
+
+		State testData = acornTestData();
 
 		assertState(testData, is, testUniverseCols, testUniverseRows);
 	}
