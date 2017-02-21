@@ -1,19 +1,18 @@
 package com.github.life.services;
 
+import com.github.life.errors.InvalidLifFileException;
 import com.github.life.models.Block;
 import com.github.life.models.State;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class ParserService {
+class ParserService {
 
-	public State parse(InputStream is, int universeCols, int universeRows) throws IOException {
-
+	State parse(InputStream is, int universeCols, int universeRows) {
 		List<Block> blocks = new ArrayList<>();
 		Map<String, List<Integer>> rules = new LinkedHashMap<>();
 		Block currentBlock = null;
@@ -22,7 +21,7 @@ public class ParserService {
 			while (sc.hasNextLine()) {
 				String line = sc.nextLine();
 
-				// header of comment, skip --------------------------------------------------------
+				// header or comment --------------------------------------------------------------
 				if (line.startsWith("#Life") || line.startsWith("#D")) {
 					continue;
 				}
@@ -40,9 +39,9 @@ public class ParserService {
 					String toComeAliveDigits = splits[1];
 
 					List<Integer> toSurvive = toSurviveDigits.chars()
-							.mapToObj(Character::getNumericValue).collect(Collectors.toList());
+						.mapToObj(Character::getNumericValue).collect(Collectors.toList());
 					List<Integer> toComeAlive = toComeAliveDigits.chars()
-							.mapToObj(Character::getNumericValue).collect(Collectors.toList());
+						.mapToObj(Character::getNumericValue).collect(Collectors.toList());
 
 					rules.put("toSurvive", toSurvive);
 					rules.put("toComeAlive", toComeAlive);
@@ -51,7 +50,6 @@ public class ParserService {
 
 				// parse blocks -------------------------------------------------------------------
 				if (line.startsWith("#P")) {
-
 					String[] splits = line.substring(3).split(" ");
 
 					// transform into our coordinate system (0, 0 in top left corner)
@@ -83,7 +81,7 @@ public class ParserService {
 							case '*':
 								return 1;
 							default:
-								return -1;
+								throw new InvalidLifFileException("invalid character found in block data!");
 						}
 					}).collect(Collectors.toList()));
 
@@ -98,7 +96,6 @@ public class ParserService {
 		}
 
 		state.setRules(rules);
-
 		state.setBlocks(blocks);
 		return state;
 	}
